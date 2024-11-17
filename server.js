@@ -8,8 +8,7 @@ const io = new Server(server);
 
 const PORT = process.env.PORT || 3000;
 
-let players = [];
-let choices = {};
+let rooms = {}; // Informacje o pokojach, ich graczach i ich wyborach
 
 // Obsługa żądań HTTP (serwowanie plików statycznych)
 app.use(express.static('public'));
@@ -17,33 +16,66 @@ app.use(express.static('public'));
 // Obsługa połączeń WebSocket
 io.on('connection', (socket) => {
     console.log(`User connected: ${socket.id}`);
-    players.push(socket.id);
 
-    // Jeśli dwóch graczy jest połączonych
-    if (players.length === 2) {
-        io.emit('start-game', { message: 'Gra się rozpoczęła!' });
-    }
+    // Dołączanie do pokoju
+    socket.on('join-room', (roomName) => {
+        socket.join(roomName); // Dołącz do pokoju
+        if (!rooms[roomName]) {
+            rooms[roomName] = { players: [], choices: {}, names: {} };
+        }
+        rooms[roomName].players.push(socket.id);
+        console.log(`User ${socket.id} joined room: ${roomName}`);
+    });
 
-    // Gracz wysyła wybór
-    socket.on('player-choice', (choice) => {
-        choices[socket.id] = choice;
+    // Ustawianie nazwy gracza
+    socket.on('set-name', ({ playerName, roomName }) => {
+        if (rooms[roomName]) {
+            rooms[roomName].names[socket.id] = playerName;
+            console.log(`Player ${socket.id} in room ${roomName} set name: ${playerName}`);
 
-        // Jeśli obaj gracze dokonali wyboru
-        if (Object.keys(choices).length === 2) {
-            const [player1, player2] = players;
-            const result = determineWinner(choices[player1], choices[player2]);
-
-            // Prześlij wyniki do graczy
-            io.emit('game-result', { result, choices });
-            choices = {}; // Zresetuj wybory na kolejną rundę
+            // Sprawdź, czy można rozpocząć grę
+            if (rooms[roomName].players.length === 2) {
+                io.to(roomName).emit('start-game', { message: 'Gra się rozpoczęła!' });
+            }
         }
     });
 
-    // Gracz rozłącza się
+    // Otrzymywanie wyboru gracza
+    socket.on('player-choice', ({ choice, roomName }) => {
+        const room = rooms[roomName];
+        if (room) {
+            room.choices[socket.id] = choice;
+
+            // Jeśli obaj gracze dokonali wyboru
+            if (Object.keys(room.choices).length === 2) {
+                const [player1, player2] = room.players;
+                const result = determineWinner(room.choices[player1], room.choices[player2]);
+
+                // Wyślij wyniki
+                io.to(roomName).emit('game-result', {
+                    result,
+                    choices: [room.choices[player1], room.choices[player2]],
+                    player1Name: room.names[player1],
+                    player2Name: room.names[player2],
+                });
+
+                // Zresetuj wybory
+                room.choices = {};
+            }
+        }
+    });
+
+    // Obsługa rozłączenia gracza
     socket.on('disconnect', () => {
-        console.log(`User disconnected: ${socket.id}`);
-        players = players.filter((id) => id !== socket.id);
-        io.emit('player-left', { message: 'Jeden z graczy opuścił grę.' });
+        for (const roomName in rooms) {
+            const room = rooms[roomName];
+            room.players = room.players.filter((id) => id !== socket.id);
+            if (room.players.length === 0) {
+                delete rooms[roomName]; // Usuń pusty pokój
+            } else {
+                io.to(roomName).emit('player-left', { message: 'Jeden z graczy opuścił grę.' });
+            }
+        }
     });
 });
 
