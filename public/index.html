@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kamień, Papier, Nożyce</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
+        button { padding: 10px 20px; margin: 10px; font-size: 16px; }
+        #result { margin-top: 20px; font-size: 18px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Kamień, Papier, Nożyce</h1>
+    <div id="game">
+        <button onclick="makeChoice('kamień')">Kamień</button>
+        <button onclick="makeChoice('papier')">Papier</button>
+        <button onclick="makeChoice('nożyce')">Nożyce</button>
+    </div>
+    <div id="result"></div>
+
+    <script>
+        const socket = io();
+
+        // Nasłuchiwanie na start gry
+        socket.on('start-game', (data) => {
+            document.getElementById('result').innerText = data.message;
+        });
+
+        // Wysłanie wyboru gracza
+        function makeChoice(choice) {
+            socket.emit('player-choice', choice);
+            document.getElementById('result').innerText = 'Czekaj na drugiego gracza...';
+        }
+
+        // Odbieranie wyniku gry
+        socket.on('game-result', (data) => {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerText = `
+                Gracz 1 wybrał: ${data.choices[Object.keys(data.choices)[0]]}
+                Gracz 2 wybrał: ${data.choices[Object.keys(data.choices)[1]]}
+                Wynik: ${data.result}
+            `;
+        });
+
+        // Obsługa rozłączenia gracza
+        socket.on('player-left', (data) => {
+            document.getElementById('result').innerText = data.message;
+        });
+    </script>
+</body>
+</html>
