@@ -12,47 +12,73 @@ const PORT = process.env.PORT || 3000;
 // Ścieżka do plików statycznych (HTML, CSS, JS)
 app.use(express.static('public'));
 
-// Inicjalizacja danych graczy i ich kwadratów
-let players = {};  // Przechowujemy dane graczy (pozycje kwadratów, itp.)
+// Wbudowane dane o ścianach
+let walls = [
+    { x: 1, y: 1 },
+    { x: 2, y: 2 },
+    { x: 3, y: 3 },
+    { x: 4, y: 4 },
+    { x: 5, y: 5 },
+    { x: 6, y: 6 },
+    { x: 7, y: 7 },
+    { x: 8, y: 8 },
+    { x: 9, y: 9 }
+];
+
+const MAP_WIDTH = 10;
+const MAP_HEIGHT = 10;
+
+// Inicjalizacja danych graczy
+let players = {};  // Przechowujemy dane graczy (pozycje kwadratów)
+
+// Funkcja do sprawdzania, czy gracz nie wchodzi w ścianę
+function checkCollision(player) {
+    console.log(walls)
+    return walls.some(wall => wall.x === player.x && wall.y === player.y);
+}
+
+function isInsideMap(x, y) {
+    return x >= 0 && x < MAP_WIDTH && y >= 0 && y < MAP_HEIGHT;
+}
 
 // Obsługa połączeń przez Socket.IO
 io.on('connection', (socket) => {
     console.log(`User connected: ${socket.id}`);
 
     // Tworzymy domyślny kwadrat dla nowego gracza
-    players[socket.id] = {
-        x: 150,  // Początkowa pozycja X
-        y: 150,  // Początkowa pozycja Y
-        size: 50, // Wielkość kwadratu
-        speed: 5   // Prędkość ruchu
-    };
+    players[socket.id] = { x: 0, y: 0 };
 
-    // Wysyłanie aktualnej pozycji kwadratu do nowego klienta
+    // Wysyłanie danych o ścianach i kwadratach do nowego klienta
+    socket.emit('mapa', walls);
     socket.emit('square-position', players);
 
-    // Odbieranie ruchów strzałkami od klienta
+    // Odbieranie ruchów od klienta
     socket.on('move-square', (direction) => {
         let player = players[socket.id];
+        let newX = player.x;
+        let newY = player.y;
+
+        // Oblicz nową pozycję gracza w zależności od kierunku
         switch (direction) {
             case 'up':
-                player.y -= player.speed;
+                newY = player.y - 1;
                 break;
             case 'down':
-                player.y += player.speed;
+                newY = player.y + 1;
                 break;
             case 'left':
-                player.x -= player.speed;
+                newX = player.x - 1;
                 break;
             case 'right':
-                player.x += player.speed;
+                newX = player.x + 1;
                 break;
         }
 
-        // Zapewniamy, że kwadrat nie wyjdzie poza canvas
-        if (player.x < 0) player.x = 0;
-        if (player.y < 0) player.y = 0;
-        if (player.x + player.size > 500) player.x = 500 - player.size;
-        if (player.y + player.size > 500) player.y = 500 - player.size;
+        // Sprawdzamy, czy pozycja po ruchu koliduje ze ścianą
+        if (isInsideMap(newX, newY) && !checkCollision({ x: newX, y: newY })) {
+            player.x = newX;  // Zaktualizuj pozycję, jeśli nie ma kolizji i gracz nie wychodzi poza mapę
+            player.y = newY;
+        }
 
         // Wysyłanie zaktualizowanej pozycji kwadratów do wszystkich klientów
         io.emit('square-position', players);
@@ -62,6 +88,7 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log(`User disconnected: ${socket.id}`);
         delete players[socket.id]; // Usuwamy gracza z listy po rozłączeniu
+        io.emit('square-position', players); // Informujemy pozostałych graczy o zmianach
     });
 });
 
