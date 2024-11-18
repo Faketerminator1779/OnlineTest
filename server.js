@@ -33,7 +33,6 @@ let players = {};  // Przechowujemy dane graczy (pozycje kwadratów)
 
 // Funkcja do sprawdzania, czy gracz nie wchodzi w ścianę
 function checkCollision(player) {
-    console.log(walls)
     return walls.some(wall => wall.x === player.x && wall.y === player.y);
 }
 
