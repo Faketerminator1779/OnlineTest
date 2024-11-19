@@ -54,9 +54,8 @@ socket.on('square-position', (players) => {
     drawSquares();  // Rysowanie wszystkich kwadratów
 });
 
-const keysPressed = new Map();
-const movementInterval = 100;  // Interwał w ms, co ile wysyłamy dane o ruchu
-const initialDelay = 200; // Opóźnienie przed rozpoczęciem cyklicznego ruchu w ms
+// Zmienna przechowująca aktualnie naciśnięte klawisze
+const activeKeys = new Set();  // Set trzyma unikalne klawisze
 
 // Funkcja do kontrolowania ruchu kwadratu
 function movePlayer(direction) {
@@ -65,29 +64,34 @@ function movePlayer(direction) {
 
 // Funkcja nasłuchująca zdarzenie naciśnięcia klawisza
 function handleKeyDown(event) {
-    if (!keysPressed.has(event.key)) {
-        // Pierwszy ruch jest opóźniony
-        movePlayer(event.key);
-        
-        // Rozpoczęcie cyklicznego ruchu po opóźnieniu
-        const intervalId = setInterval(() => movePlayer(event.key), movementInterval);
-        keysPressed.set(event.key, { intervalId, timeoutId: setTimeout(() => movePlayer(event.key), initialDelay) });
-    }
+    activeKeys.add(event.key);  // Dodajemy klawisz do zestawu naciśniętych klawiszy
 }
 
 // Funkcja nasłuchująca zdarzenie puszczenia klawisza
 function handleKeyUp(event) {
-    if (keysPressed.has(event.key)) {
-        // Zatrzymanie interwału oraz opóźnienia
-        clearInterval(keysPressed.get(event.key).intervalId);
-        clearTimeout(keysPressed.get(event.key).timeoutId);
-        keysPressed.delete(event.key);
+    activeKeys.delete(event.key);  // Usuwamy klawisz z zestawu po jego puszczeniu
+}
+
+// Funkcja do wysyłania naciśniętych klawiszy do serwera co 100ms
+function sendKeysToServer() {
+    if (activeKeys.size > 0) {
+        // Jeśli mamy jakieś aktywne klawisze, wysyłamy je do serwera
+        socket.emit('move-square', Array.from(activeKeys));
     }
 }
+
+// Uruchomienie interwału, który co 100ms będzie wysyłał aktywne klawisze do serwera
+setInterval(sendKeysToServer, 100);
 
 // Nasłuchiwanie na naciśnięcie klawiszy (strzałki)
 window.addEventListener('keydown', handleKeyDown);
 window.addEventListener('keyup', handleKeyUp);
 
-// Rysowanie wszystkich kwadratów
-drawSquares();
+// Użycie requestAnimationFrame do płynniejszego rysowania
+function gameLoop() {
+    drawSquares();
+    requestAnimationFrame(gameLoop);  // Kontynuowanie rysowania w każdej klatce
+}
+
+// Rozpocznij główną pętlę gry
+gameLoop();

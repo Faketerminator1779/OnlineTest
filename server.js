@@ -52,33 +52,38 @@ io.on('connection', (socket) => {
     socket.emit('square-position', players);
 
     // Odbieranie ruchów od klienta
-    socket.on('move-square', (direction) => {
-        let player = players[socket.id];
-        let newX = player.x;
-        let newY = player.y;
-
-        // Oblicz nową pozycję gracza w zależności od kierunku
-        switch (direction) {
-            case 'ArrowUp':
-                newY = player.y - 1;
-                break;
-            case 'ArrowDown':
-                newY = player.y + 1;
-                break;
-            case 'ArrowLeft':
-                newX = player.x - 1;
-                break;
-            case 'ArrowRight':
-                newX = player.x + 1;
-                break;
-        }
-
-        // Sprawdzamy, czy pozycja po ruchu koliduje ze ścianą
-        if (isInsideMap(newX, newY) && !checkCollision({ x: newX, y: newY })) {
-            player.x = newX;  // Zaktualizuj pozycję, jeśli nie ma kolizji i gracz nie wychodzi poza mapę
-            player.y = newY;
-        }
-
+    socket.on('move-square', (directions) => {
+        const player = players[socket.id];
+        if (!player) return; // Jeśli gracz nie istnieje, nic nie rób
+    
+        // Iterujemy po każdym kierunku i aktualizujemy pozycję gracza
+        directions.forEach(direction => {
+            let newX = player.x;
+            let newY = player.y;
+    
+            // Oblicz nową pozycję gracza w zależności od kierunku
+            switch (direction) {
+                case 'ArrowUp':
+                    newY = player.y - 1;
+                    break;
+                case 'ArrowDown':
+                    newY = player.y + 1;
+                    break;
+                case 'ArrowLeft':
+                    newX = player.x - 1;
+                    break;
+                case 'ArrowRight':
+                    newX = player.x + 1;
+                    break;
+            }
+    
+            // Sprawdzamy, czy pozycja po ruchu koliduje ze ścianą
+            if (isInsideMap(newX, newY) && !checkCollision({ x: newX, y: newY })) {
+                player.x = newX;  // Zaktualizuj pozycję, jeśli nie ma kolizji i gracz nie wychodzi poza mapę
+                player.y = newY;
+            }
+        });
+    
         // Wysyłanie zaktualizowanej pozycji kwadratów do wszystkich klientów
         io.emit('square-position', players);
     });
