@@ -16,7 +16,6 @@ class Wall {
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-const keysPressed = new Map();
 // Tablica ścian
 let walls = [];
 let squares = {}; // Przechowujemy pozycje wszystkich graczy
@@ -55,38 +54,35 @@ socket.on('square-position', (players) => {
     drawSquares();  // Rysowanie wszystkich kwadratów
 });
 
+const keysPressed = new Map();
+const movementInterval = 100;  // Interwał w ms, co ile wysyłamy dane o ruchu
+
 // Funkcja do kontrolowania ruchu kwadratu
-function movePlayer(event) {
-    switch (event.key) {
-        case 'ArrowUp':
-            socket.emit('move-square', 'up');
-            break;
-        case 'ArrowDown':
-            socket.emit('move-square', 'down');
-            break;
-        case 'ArrowLeft':
-            socket.emit('move-square', 'left');
-            break;
-        case 'ArrowRight':
-            socket.emit('move-square', 'right');
-            break;
-    }
+function movePlayer(direction) {
+    socket.emit('move-square', direction);
 }
+
+// Funkcja nasłuchująca zdarzenie naciśnięcia klawisza
 function handleKeyDown(event) {
     if (!keysPressed.has(event.key)) {
+        // Od razu reagujemy na naciśnięcie klawisza
         movePlayer(event.key);
-        const intervalId = setInterval(() => movePlayer(event), 100);
+        const intervalId = setInterval(() => movePlayer(event.key), movementInterval);
         keysPressed.set(event.key, intervalId);
     }
 }
 
+// Funkcja nasłuchująca zdarzenie puszczenia klawisza
 function handleKeyUp(event) {
     if (keysPressed.has(event.key)) {
         clearInterval(keysPressed.get(event.key));
         keysPressed.delete(event.key);
     }
 }
+
 // Nasłuchiwanie na naciśnięcie klawiszy (strzałki)
 window.addEventListener('keydown', handleKeyDown);
 window.addEventListener('keyup', handleKeyUp);
-drawSquares();  // Rysowanie wszystkich kwadratów
+
+// Rysowanie wszystkich kwadratów
+drawSquares();

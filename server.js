@@ -59,16 +59,16 @@ io.on('connection', (socket) => {
 
         // Oblicz nową pozycję gracza w zależności od kierunku
         switch (direction) {
-            case 'up':
+            case 'ArrowUp':
                 newY = player.y - 1;
                 break;
-            case 'down':
+            case 'ArrowDown':
                 newY = player.y + 1;
                 break;
-            case 'left':
+            case 'ArrowLeft':
                 newX = player.x - 1;
                 break;
-            case 'right':
+            case 'ArrowRight':
                 newX = player.x + 1;
                 break;
         }
