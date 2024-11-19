@@ -56,6 +56,7 @@ socket.on('square-position', (players) => {
 
 const keysPressed = new Map();
 const movementInterval = 100;  // Interwał w ms, co ile wysyłamy dane o ruchu
+const initialDelay = 200; // Opóźnienie przed rozpoczęciem cyklicznego ruchu w ms
 
 // Funkcja do kontrolowania ruchu kwadratu
 function movePlayer(direction) {
@@ -65,17 +66,21 @@ function movePlayer(direction) {
 // Funkcja nasłuchująca zdarzenie naciśnięcia klawisza
 function handleKeyDown(event) {
     if (!keysPressed.has(event.key)) {
-        // Od razu reagujemy na naciśnięcie klawisza
+        // Pierwszy ruch jest opóźniony
         movePlayer(event.key);
+        
+        // Rozpoczęcie cyklicznego ruchu po opóźnieniu
         const intervalId = setInterval(() => movePlayer(event.key), movementInterval);
-        keysPressed.set(event.key, intervalId);
+        keysPressed.set(event.key, { intervalId, timeoutId: setTimeout(() => movePlayer(event.key), initialDelay) });
     }
 }
 
 // Funkcja nasłuchująca zdarzenie puszczenia klawisza
 function handleKeyUp(event) {
     if (keysPressed.has(event.key)) {
-        clearInterval(keysPressed.get(event.key));
+        // Zatrzymanie interwału oraz opóźnienia
+        clearInterval(keysPressed.get(event.key).intervalId);
+        clearTimeout(keysPressed.get(event.key).timeoutId);
         keysPressed.delete(event.key);
     }
 }
