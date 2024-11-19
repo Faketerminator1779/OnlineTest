@@ -16,6 +16,7 @@ class Wall {
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+const keysPressed = new Map();
 // Tablica ścian
 let walls = [];
 let squares = {}; // Przechowujemy pozycje wszystkich graczy
@@ -55,7 +56,7 @@ socket.on('square-position', (players) => {
 });
 
 // Funkcja do kontrolowania ruchu kwadratu
-function controlSquare(event) {
+function movePlayer(event) {
     switch (event.key) {
         case 'ArrowUp':
             socket.emit('move-square', 'up');
@@ -71,7 +72,21 @@ function controlSquare(event) {
             break;
     }
 }
+function handleKeyDown(event) {
+    if (!keysPressed.has(event.key)) {
+        movePlayer(event.key);
+        const intervalId = setInterval(() => movePlayer(event), 100);
+        keysPressed.set(event.key, intervalId);
+    }
+}
 
+function handleKeyUp(event) {
+    if (keysPressed.has(event.key)) {
+        clearInterval(keysPressed.get(event.key));
+        keysPressed.delete(event.key);
+    }
+}
 // Nasłuchiwanie na naciśnięcie klawiszy (strzałki)
-window.addEventListener('keydown', controlSquare);
+window.addEventListener('keydown', handleKeyDown);
+window.addEventListener('keyup', handleKeyUp);
 drawSquares();  // Rysowanie wszystkich kwadratów
