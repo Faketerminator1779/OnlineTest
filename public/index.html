@@ -4,16 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kwadraty na Canvasie - Sterowanie przez Serwer</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
-        canvas { border: 1px solid #000; margin-top: 20px; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Kwadraty na Canvasie - Sterowanie przez Serwer</h1>
     <canvas id="gameCanvas" width="500" height="500"></canvas>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="./main.js"></script>
+    <script type="module" src="./main.js"></script>
 </body>
 </html>
