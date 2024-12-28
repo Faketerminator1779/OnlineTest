@@ -38,19 +38,16 @@ function isInsideMap(x, y) {
 io.on('connection', (socket) => {
     console.log(`User connected: ${socket.id}`);
 
-    // Initial player position
     players[socket.id] = { x: 0, y: 0 };
 
-    // Send current walls and player positions only when requested
     socket.on('request-map', () => {
-        socket.emit('mapa', walls);  // Wysłanie mapy na żądanie klienta
+        socket.emit('mapa', walls);
     });
 
     socket.on('request-positions', () => {
-        socket.emit('square-position', players);  // Wysłanie pozycji graczy na żądanie klienta
+        socket.emit('square-position', players);
     });
 
-    // Send current walls to all players whenever a wall is updated
     socket.on('move-square', (directions) => {
         const player = players[socket.id];
         if (!player) return;
@@ -80,14 +77,11 @@ io.on('connection', (socket) => {
             }
         });
     
-        // Emit updated player positions
         io.emit('square-position', players);
 
-        // Emit map (walls) whenever something changes on the map
         io.emit('mapa', walls);
     });
 
-    // Handle disconnection
     socket.on('disconnect', () => {
         console.log(`User disconnected: ${socket.id}`);
         delete players[socket.id];
@@ -95,7 +89,6 @@ io.on('connection', (socket) => {
     });
 });
 
-// Start server
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

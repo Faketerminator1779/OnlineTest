@@ -9,12 +9,11 @@ let currentScene;
 
 function switchToScene(newScene) {
     if (currentScene) {
-        currentScene.detachEventListeners();  // Usuń nasłuchiwacze z poprzedniej sceny
+        currentScene.detachEventListeners();
     }
 
-    console.log(`Switching to scene: ${newScene.constructor.name}`);
     currentScene = newScene;
-    currentScene.attachEventListeners();  // Przypisz nasłuchiwacze do nowej sceny
+    currentScene.attachEventListeners();
     drawLoop();
 }
 
@@ -23,7 +22,6 @@ function drawLoop() {
     requestAnimationFrame(drawLoop);
 }
 
-// Inicjalizacja ekranu startowego
 const startScreen = new StartScreen(canvas, () => {
     const gameScreen = new GameScreen(canvas, socket);
     switchToScene(gameScreen);

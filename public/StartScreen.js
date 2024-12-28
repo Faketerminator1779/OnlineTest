@@ -6,20 +6,17 @@ export class StartScreen {
         this.onStartCallback = onStartCallback;
         this.startButton = { x: 150, y: 200, width: 200, height: 50, text: 'Start' };
 
-        // Zapisujemy związaną funkcję jako właściwość klasy
         this.boundClickHandler = this.clickHandler.bind(this);
     }
 
     draw() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);  // Wyczyszczenie ekranu
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.fillStyle = '#333';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Rysowanie przycisku
         this.ctx.fillStyle = '#555';
         this.ctx.fillRect(this.startButton.x, this.startButton.y, this.startButton.width, this.startButton.height);
 
-        // Tekst na przycisku
         this.ctx.fillStyle = '#FFF';
         this.ctx.font = '20px Arial';
         this.ctx.textAlign = 'center';
@@ -28,12 +25,10 @@ export class StartScreen {
     }
 
     attachEventListeners() {
-        // Używamy zapisanej funkcji
         this.canvas.addEventListener('click', this.boundClickHandler);
     }
 
     detachEventListeners() {
-        // Usuwamy ten sam listener
         this.canvas.removeEventListener('click', this.boundClickHandler);
     }
 
