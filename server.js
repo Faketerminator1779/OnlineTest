@@ -38,7 +38,9 @@ function isInsideMap(x, y) {
 io.on('connection', (socket) => {
     console.log(`User connected: ${socket.id}`);
 
-    players[socket.id] = { x: 0, y: 0 };
+    socket.on('request-create-player', () => {
+        players[socket.id] = { x: 0, y: 0 };
+    });
 
     socket.on('request-map', () => {
         socket.emit('mapa', walls);

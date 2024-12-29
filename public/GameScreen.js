@@ -86,6 +86,10 @@ export class GameScreen {
         window.removeEventListener('keyup', this.handleKeyUp.bind(this));
     }
 
+    cratePlayer() {
+        this.socket.emit('request-create-player');
+    }
+
     requestMap() {
         this.socket.emit('request-map');
     }
@@ -95,6 +99,7 @@ export class GameScreen {
     }
 
     startGame() {
+        this.cratePlayer();
         this.requestMap();
         this.requestPositions();
         this.startSendingKeys();
