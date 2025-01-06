@@ -11,7 +11,11 @@ export class GameScreen {
         this.canvas = canvas;
         this.socket = socket;
         this.ctx = this.canvas.getContext('2d');
-        this.walls = [];
+        
+        const rows = 10;
+        const cols = 10;
+        
+        this.map = Array.from({ length: rows }, () => Array(cols).fill(null));
         this.players = {};
 
         this.setupSocketListeners();
@@ -22,10 +26,16 @@ export class GameScreen {
     }
 
     drawWalls() {
-        this.walls.forEach(wall => {
-            this.ctx.fillStyle = 'blue';
-            this.ctx.fillRect(wall.x * 50, wall.y * 50, 50, 50);
-        });
+        for (let i = 0; i < this.map.length; i++) {
+            for (let j = 0; j < this.map[i].length; j++) {
+                const cell = this.map[j][i];
+                if (cell === null) {
+                } else {
+                    this.ctx.fillStyle = cell.color;
+                    this.ctx.fillRect(j * 50, i * 50, 50, 50);
+                }
+            }
+        }
     }
 
     drawPlayers() {
@@ -43,8 +53,8 @@ export class GameScreen {
         this.drawPlayers();
     }
     setupSocketListeners() {
-        this.socket.on('mapa', (serverWalls) => {
-            this.walls = serverWalls.map(wallData => new Wall(wallData.x, wallData.y));
+        this.socket.on('map', (map) => {
+            this.map = map
             this.drawMap();
         });
 

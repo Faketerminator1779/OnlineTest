@@ -12,15 +12,26 @@ app.use(express.static('public'));
 
 let walls = [
     { x: 1, y: 1, color: "blue", passable: true },
-    { x: 2, y: 2, color: "blue", passable: true  },
-    { x: 3, y: 3, color: "blue", passable: true  },
-    { x: 4, y: 4, color: "blue", passable: true  },
-    { x: 5, y: 5, color: "blue", passable: true  },
-    { x: 6, y: 6, color: "blue", passable: true  },
-    { x: 7, y: 7, color: "blue", passable: true  },
-    { x: 8, y: 8, color: "blue", passable: true  },
-    { x: 9, y: 9, color: "blue", passable: true  }
+    { x: 2, y: 2, color: "blue", passable: true },
+    { x: 3, y: 3, color: "blue", passable: true },
+    { x: 4, y: 4, color: "blue", passable: true },
+    { x: 5, y: 5, color: "blue", passable: true },
+    { x: 6, y: 6, color: "blue", passable: true },
+    { x: 7, y: 7, color: "blue", passable: true },
+    { x: 8, y: 8, color: "blue", passable: true },
+    { x: 9, y: 9, color: "blue", passable: true }
 ];
+
+const rows = 10;
+const cols = 10;
+
+let map = Array.from({ length: rows }, () => Array(cols).fill(null));
+
+walls.forEach(wall => {
+    const { x, y, color, passable } = wall;
+    map[x][y] = { color, passable };
+});
+
 
 const MAP_WIDTH = 10;
 const MAP_HEIGHT = 10;
@@ -43,7 +54,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('request-map', () => {
-        socket.emit('mapa', walls);
+        socket.emit('map', map);
     });
 
     socket.on('request-positions', () => {
@@ -81,7 +92,7 @@ io.on('connection', (socket) => {
     
         io.emit('square-position', players);
 
-        io.emit('mapa', walls);
+        io.emit('map', map);
     });
 
     socket.on('disconnect', () => {
