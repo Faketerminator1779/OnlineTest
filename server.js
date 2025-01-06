@@ -19,13 +19,13 @@ let walls = [
     { x: 6, y: 6, color: "blue", passable: true },
     { x: 7, y: 7, color: "blue", passable: true },
     { x: 8, y: 8, color: "blue", passable: true },
-    { x: 9, y: 9, color: "blue", passable: true }
 ];
 
-const rows = 10;
-const cols = 10;
 
-let map = Array.from({ length: rows }, () => Array(cols).fill(null));
+const MAP_WIDTH = 9;
+const MAP_HEIGHT = 9;
+
+let map = Array.from({ length: MAP_WIDTH }, () => Array(MAP_HEIGHT).fill(null));
 
 walls.forEach(wall => {
     const { x, y, color, passable } = wall;
@@ -33,8 +33,6 @@ walls.forEach(wall => {
 });
 
 
-const MAP_WIDTH = 10;
-const MAP_HEIGHT = 10;
 
 let players = {};
 
