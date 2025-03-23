@@ -1,15 +1,17 @@
 // StartScreen.js
 export class StartScreen {
     constructor(canvas, onStartCallback) {
+        this.scale = window.gameScale.scale
         this.canvas = canvas;
         this.ctx = this.canvas.getContext('2d');
+        this.ctx.imageSmoothingEnabled = false;
         this.onStartCallback = onStartCallback;
-        this.startButton = { x: 150, y: 200, width: 200, height: 50, text: 'Start' };
+        this.startButton = { x: 190 * this.scale, y: 119 * this.scale, width: 100 * this.scale, height: 50 * this.scale, text: 'Start' };
 
         this.boundClickHandler = this.clickHandler.bind(this);
     }
 
-    draw() {
+    draw(frameCount) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.fillStyle = '#333';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
